@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  dodep-web:
+    build:
+      context: app
+      dockerfile: Dockerfile
+    container_name: dodep-web
+    ports:
+      - "8765:5000"
+    environment:
+      - DATABASE_URL=postgresql://depdodep:depnul_v_kazik@dodep-db:5432/dodep_db
+    volumes:
+      - ./app/static:/app/static/
+    depends_on:
+      dodep-db:
+        condition: service_healthy
+    networks:
+      dodep-yes:
+
+  dodep-db:
+    image: postgres:latest
+    container_name: dodep-db
+    environment:
+      - POSTGRES_DB=dodep_db
+      - POSTGRES_USER=depdodep
+      - POSTGRES_PASSWORD=depnul_v_kazik
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U depdodep -d dodep_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      dodep-yes:
+
+networks:
+  dodep-yes:
+
+volumes:
+  postgres_data:

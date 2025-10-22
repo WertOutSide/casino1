@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid" id="blackjack-game-container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-dark text-white">
+                <div class="card-body text-center">
+                    <h1 class="display-4 mb-3">♠️ ДОДЕП БЛЭКДЖЕК ♠️</h1>
+                    <p class="lead mb-0">Любимая игра Бендера!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="card casino-card">
+                <div class="card-header bg-dark text-white">
+                    <h4 class="mb-0">Игровой стол</h4>
+                </div>
+                <div class="card-body">
+                    <h3 class="text-white">
+                        Дилер (<span id="dealer-score">?</span>)
+                    </h3>
+                    <div class="hand d-flex flex-wrap gap-2 mb-4" id="dealer-hand">
+                    </div>
+
+                    <h3 class="text-white">
+                        Твоя рука (<span id="player-score">?</span>)
+                    </h3>
+                    <div class="hand d-flex flex-wrap gap-2 mb-4" id="player-hand">
+                    </div>
+
+                    <div class="alert alert-info mt-3" id="game-message" style="display: none;">
+                        <h4>Начните игру</h4>
+                    </div>
+
+                    <div id="actionControls" class="d-flex gap-3 mt-4" style="display: none;">
+                        <button id="hitButton" class="btn btn-success btn-lg flex-grow-1">Взять карту</button>
+                        <button id="standButton" class="btn btn-warning btn-lg flex-grow-1">Хватит</button>
+                    </div>
+
+                    <div id="newGameControls" class="mt-4" style="display: none;">
+                        <button id="newGameButton" class="btn btn-primary btn-lg w-100">Начать новую игру</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card mb-4 casino-card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">Ставки и Баланс</h5>
+                </div>
+                <div class="card-body">
+                    <div class="balance-info mb-3 p-3 bg-light rounded">
+                        <h6>Твой баланс</h6>
+                        <h3 class="text-success" id="currentBalance">${{ "%.2f"|format(current_user.balance) }}</h3>
+                    </div>
+                    
+                    <div class="bet-info mb-3 p-3 bg-light rounded">
+                        <h6>Текущая ставка</h6>
+                        <h4 class="text-primary" id="currentBetDisplay">$0.00</h4>
+                    </div>
+                    
+                    <div class="bet-controls mb-4" id="betControls">
+                        <label for="betAmount" class="form-label">Размер ставки</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" class="form-control" id="betAmount" 
+                                   min="1" max="1000" step="1" value="10">
+                            <button id="startBetButton" class="btn btn-primary">Сделать ставку</button>
+                        </div>
+                    </div>
+
+                    <h5 class="mt-4">Быстрые ставки</h5>
+                    <div class="quick-bets btn-group w-100">
+                        <button class="btn btn-outline-primary quick-bet" data-bet="10">$10</button>
+                        <button class="btn btn-outline-primary quick-bet" data-bet="50">$50</button>
+                        <button class="btn btn-outline-primary quick-bet" data-bet="100">$100</button>
+                        <button class="btn btn-outline-primary quick-bet" data-bet="500">$500</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.hand {
+    min-height: 120px;
+    padding: 10px;
+}
+
+.card-item {
+    background: white;
+    color: black;
+    padding: 15px 8px;
+    border-radius: 8px;
+    width: 70px;
+    height: 100px;
+    text-align: center;
+    font-weight: bold;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    border: 2px solid #e0e0e0;
+    position: relative;
+    font-size: 1.8rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.card-item.card-back {
+    background: linear-gradient(45deg, #b71c1c, #d32f2f);
+    color: white;
+    font-size: 2.5rem;
+    border: 2px solid #ff5252;
+}
+
+.card-item.card-back:before {
+    content: "?";
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: rgba(255,255,255,0.9);
+}
+
+.card-item:before {
+    display: none;
+}
+
+.card-hearts, .card-diamonds {
+    color: #e74c3c;
+    border-color: #e74c3c;
+}
+
+.card-spades, .card-clubs {
+    color: #2c3e50;
+    border-color: #2c3e50;
+}
+
+.card-item:after {
+    content: "";
+    font-size: 1.2rem;
+    margin-top: 5px;
+}
+
+.card-hearts:after {
+    content: "♥";
+    color: #e74c3c;
+}
+
+.card-diamonds:after {
+    content: "♦";
+    color: #e74c3c;
+}
+
+.card-spades:after {
+    content: "♠";
+    color: #2c3e50;
+}
+
+.card-clubs:after {
+    content: "♣";
+    color: #2c3e50;
+}
+
+.corner {
+    position: absolute;
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+.top-left {
+    top: 5px;
+    left: 5px;
+    text-align: left;
+}
+
+.bottom-right {
+    bottom: 5px;
+    right: 5px;
+    text-align: right;
+    transform: rotate(180deg);
+}
+
+.corner-suit {
+    font-size: 0.7rem;
+    display: block;
+    line-height: 0.8;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/blackjack.js') }}"></script>
+{% endblock %}
+

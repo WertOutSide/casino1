@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card casino-card">
+                <div class="card-header bg-dark text-white">
+                    <h2 class="mb-0">Профиль</h2>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }}">{{ message }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <h4 class="mb-3">Твой профиль</h4>
+                    <p><strong>Имя аккаунта:</strong> [[username]]</p>
+                    <p><strong>Баланс:</strong> ${{ "%.2f"|format(current_user.balance) }}</p>
+                    <a href="{{ url_for('profile.edit_profile') }}" class="btn btn-primary">Редактировать профиль</a>
+
+                    <h4 class="mt-5 mb-3">Статистика по играм</h4>
+                    <ul>
+                        <li><strong>Всего спинов:</strong> {{ current_user.total_spins }}</li>
+                        <li><strong>Всего побед:</strong> {{ current_user.total_wins }}</li>
+                        <li><strong>Наибольший выигрыш:</strong> ${{ "%.2f"|format(current_user.biggest_win) }}</li>
+                    </ul>
+
+                    <h4 class="mt-5 mb-3">Инвентарь</h4>
+                    {% if user_inventory %}
+                        <div class="row">
+                            {% for item in user_inventory %}
+                                <div class="col-md-4 mb-3">
+                                    <div class="card h-100">
+                                        <img src="{{ item.image_url or '/static/images/default-item.png' }}" 
+                                         alt="{{ item.name }}" 
+                                         class="card-img-top"
+                                         onerror="this.src='/static/images/default-item.png'">
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ item.item.name }}</h5>
+                                            <p class="card-text">{{ item.item.description }}</p>
+                                          <p class="card-text"><small class="text-muted">Куплено: {{ item.acquired_at.strftime('%Y-%m-%d') }}</small></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p>Инвентарь пусть.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

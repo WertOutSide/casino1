@@ -1,0 +1,800 @@
+.bg-gold {
+    background-color: #FFD700 !important;
+    color: #000 !important;
+}
+
+/* Roulette Wheel Styles */
+.roulette-wheel-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    background: radial-gradient(circle, #2d5a3d 0%, #1a472a 100%);
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.wheel-outer {
+    position: relative;
+    width: 420px;
+    height: 420px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.wheel-inner {
+    position: relative;
+    width: 400px;
+    height: 400px;
+    border-radius: 50%;
+    box-shadow: 
+        0 0 0 10px #8B4513,
+        0 0 0 15px #FFD700,
+        0 0 30px rgba(0, 0, 0, 0.8),
+        inset 0 0 50px rgba(0, 0, 0, 0.5);
+}
+
+.wheel-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #FFD700 0%, #DAA520 100%);
+    box-shadow: 
+        0 0 20px rgba(255, 215, 0, 0.8),
+        inset 0 0 10px rgba(0, 0, 0, 0.3);
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.wheel-center-inner {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #8B4513 0%, #654321 100%);
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+.wheel-pointer {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-top: 30px solid #FFD700;
+    filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.5));
+    z-index: 20;
+}
+
+.wheel-ball {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    background: radial-gradient(circle at 30% 30%, #ffffff, #cccccc);
+    border-radius: 50%;
+    box-shadow: 
+        0 2px 5px rgba(0, 0, 0, 0.5),
+        inset -2px -2px 3px rgba(0, 0, 0, 0.3);
+    z-index: 15;
+    display: none;
+    transition: all 0.05s linear;
+}
+
+.winning-number-display {
+    text-align: center;
+    margin-top: 10px;
+}
+
+.winning-number {
+    display: inline-block;
+    width: 80px;
+    height: 80px;
+    line-height: 80px;
+    font-size: 36px;
+    font-weight: bold;
+    color: white;
+    border-radius: 50%;
+    background: #333;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    border: 4px solid #FFD700;
+}
+
+.winning-number.red {
+    background: linear-gradient(135deg, #CC0000 0%, #990000 100%);
+}
+
+.winning-number.black {
+    background: linear-gradient(135deg, #333333 0%, #000000 100%);
+}
+
+.winning-number.green {
+    background: linear-gradient(135deg, #00AA00 0%, #008800 100%);
+}
+
+/* Last Results */
+.last-results {
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+}
+
+.results-track {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.result-number {
+    display: inline-block;
+    width: 35px;
+    height: 35px;
+    line-height: 35px;
+    text-align: center;
+    font-weight: bold;
+    color: white;
+    border-radius: 50%;
+    font-size: 14px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.result-number.red {
+    background: #CC0000;
+}
+
+.result-number.black {
+    background: #000000;
+}
+
+.result-number.green {
+    background: #00AA00;
+}
+
+/* Betting Table */
+.betting-table {
+    margin-top: 20px;
+}
+
+.betting-grid {
+    
+    background: #1a472a;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+}
+
+.bet-cell {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 50px;
+    min-height: 50px;
+    border: 2px solid #FFD700;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: bold;
+    font-size: 16px;
+    user-select: none;
+}
+
+.bet-cell:hover:not(.empty-cell) {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+    z-index: 10;
+}
+
+.bet-cell span {
+    position: relative;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.zero-cell {
+    background: #00AA00;
+    color: white;
+    width: 50px;
+    height: 160px;
+    writing-mode: vertical-rl;
+    font-size: 24px;
+    margin-right: 5px;
+}
+
+.numbers-grid {
+    vertical-align: top;
+}
+
+.number-row {
+    display: flex;
+    gap: 0;
+}
+
+.number-cell {
+    width: 60px;
+    height: 50px;
+    color: white;
+}
+
+.number-cell.red {
+    background: #CC0000;
+}
+
+.number-cell.black {
+    background: #000000;
+}
+
+.column-cell {
+    width: 60px;
+    height: 50px;
+    background: #2d5a3d;
+    color: white;
+    margin-left: 5px;
+}
+
+.dozen-row {
+    display: flex;
+    gap: 0;
+    margin-top: 5px;
+}
+
+.dozen-cell {
+    width: 242px;
+    height: 50px;
+    background: #2d5a3d;
+    color: white;
+    margin-right: 5px;
+}
+
+.outside-row {
+    display: flex;
+    gap: 0;
+    margin-top: 5px;
+}
+
+.outside-cell {
+    width: 121px;
+    height: 50px;
+    background: #2d5a3d;
+    color: white;
+    font-size: 14px;
+}
+
+.color-bet-red {
+    background: #CC0000 !important;
+    font-size: 24px;
+}
+
+.color-bet-black {
+    background: #000000 !important;
+    font-size: 24px;
+}
+
+.empty-cell {
+    background: transparent;
+    border: none;
+    cursor: default;
+}
+
+/* Chip Styles */
+.chip-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 5;
+    display: none;
+    pointer-events: none;
+}
+
+.chip {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 11px;
+    color: white;
+    border: 3px dashed white;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
+    animation: chipPulse 0.3s ease-out;
+}
+
+@keyframes chipPulse {
+    0% { transform: scale(0); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+.chip-1 {
+    background: linear-gradient(135deg, #999999 0%, #666666 100%);
+}
+
+.chip-5 {
+    background: linear-gradient(135deg, #FF6B6B 0%, #CC0000 100%);
+}
+
+.chip-10 {
+    background: linear-gradient(135deg, #4ECDC4 0%, #2C7A7B 100%);
+}
+
+.chip-25 {
+    background: linear-gradient(135deg, #95E1D3 0%, #38B2AC 100%);
+}
+
+.chip-50 {
+    background: linear-gradient(135deg, #F38181 0%, #E63946 100%);
+}
+
+.chip-100 {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+}
+
+/* Chip Selection Buttons */
+.chip-buttons {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.chip-btn {
+    width: 100%;
+    height: 50px;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    font-weight: bold;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+}
+
+.chip-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+.chip-btn.active {
+    border-color: #FFD700;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+}
+
+.chip-btn[data-value="1"] {
+    background: linear-gradient(135deg, #999999 0%, #666666 100%);
+}
+
+.chip-btn[data-value="5"] {
+    background: linear-gradient(135deg, #FF6B6B 0%, #CC0000 100%);
+}
+
+.chip-btn[data-value="10"] {
+    background: linear-gradient(135deg, #4ECDC4 0%, #2C7A7B 100%);
+}
+
+.chip-btn[data-value="25"] {
+    background: linear-gradient(135deg, #95E1D3 0%, #38B2AC 100%);
+}
+
+.chip-btn[data-value="50"] {
+    background: linear-gradient(135deg, #F38181 0%, #E63946 100%);
+}
+
+.chip-btn[data-value="100"] {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+}
+
+/* Current Bets List */
+.current-bets-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.bet-item {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Result Modal */
+.winning-number-large {
+    display: inline-block;
+    width: 120px;
+    height: 120px;
+    line-height: 120px;
+    font-size: 48px;
+    font-weight: bold;
+    color: white;
+    border-radius: 50%;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    border: 5px solid #FFD700;
+}
+
+.winning-number-large.red {
+    background: linear-gradient(135deg, #CC0000 0%, #990000 100%);
+}
+
+.winning-number-large.black {
+    background: linear-gradient(135deg, #333333 0%, #000000 100%);
+}
+
+.winning-number-large.green {
+    background: linear-gradient(135deg, #00AA00 0%, #008800 100%);
+}
+
+.result-win, .result-loss {
+    animation: resultFadeIn 0.5s ease-out;
+}
+
+@keyframes resultFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .wheel-outer {
+        width: 320px;
+        height: 320px;
+    }
+    
+    .wheel-inner {
+        width: 300px;
+        height: 300px;
+    }
+    
+    #wheelCanvas {
+        width: 300px !important;
+        height: 300px !important;
+    }
+    
+    .number-cell {
+        width: 45px;
+        height: 40px;
+        font-size: 14px;
+    }
+    
+    .column-cell, .dozen-cell, .outside-cell {
+        height: 40px;
+        font-size: 12px;
+    }
+}
+
+/* Slots specific styles */
+.slot-machine {
+    max-width: 100%;
+}
+
+.slot-frame {
+    box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5);
+}
+
+.slot-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    padding: 20px;
+}
+
+.reel-column {
+    background: white;
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.slot-symbol {
+    font-size: 64px;
+    text-align: center;
+    padding: 20px;
+    background: linear-gradient(to bottom, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 8px;
+    margin: 5px 0;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.slot-symbol.spinning {
+    animation: spin 0.1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-100%); }
+}
+
+.paytable-item {
+    padding: 8px;
+    border-radius: 5px;
+    background: #f8f9fa;
+}
+
+
+
+
+/* Global Casino Theme */
+body {
+    background: url('/static/images/casino-bg.jpg') no-repeat center center fixed;
+    background-size: cover;
+    font-family: 'Georgia', serif;
+    color: #f0f0f0;
+}
+
+.navbar {
+    background-color: #1a1a1a !important;
+    border-bottom: 3px solid #FFD700;
+}
+
+.navbar-brand, .nav-link {
+    color: #FFD700 !important;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+.navbar-brand:hover, .nav-link:hover {
+    color: #FFFFFF !important;
+}
+
+.container {
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+}
+
+.card {
+    background-color: rgba(26, 26, 26, 0.9) !important;
+    border: 1px solid #FFD700;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    color: #f0f0f0;
+}
+
+.card-header {
+    background-color: #333333 !important;
+    border-bottom: 1px solid #FFD700;
+    color: #FFD700 !important;
+    font-weight: bold;
+}
+
+.btn-primary {
+    background-color: #FFD700 !important;
+    border-color: #FFD700 !important;
+    color: #1a1a1a !important;
+    font-weight: bold;
+}
+
+.btn-primary:hover {
+    background-color: #DAA520 !important;
+    border-color: #DAA520 !important;
+}
+
+.btn-success {
+    background-color: #00AA00 !important;
+    border-color: #00AA00 !important;
+}
+
+.btn-success:hover {
+    background-color: #008800 !important;
+    border-color: #008800 !important;
+}
+
+.btn-danger {
+    background-color: #CC0000 !important;
+    border-color: #CC0000 !important;
+}
+
+.btn-danger:hover {
+    background-color: #990000 !important;
+    border-color: #990000 !important;
+}
+
+.text-success {
+    color: #00AA00 !important;
+}
+
+.text-danger {
+    color: #CC0000 !important;
+}
+
+.text-warning {
+    color: #FFD700 !important;
+}
+
+.form-control {
+    background-color: #333333;
+    color: #f0f0f0;
+    border: 1px solid #FFD700;
+}
+
+.form-control:focus {
+    background-color: #444444;
+    color: #f0f0f0;
+    border-color: #FFD700;
+    box-shadow: 0 0 0 0.25rem rgba(255, 215, 0, 0.25);
+}
+
+.alert-info {
+    background-color: #333333;
+    color: #FFD700;
+    border-color: #FFD700;
+}
+
+.hero-section {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%) !important;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+.hero-section h1 {
+    color: #FFD700;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+}
+
+.hero-section p.lead {
+    color: #f0f0f0;
+}
+
+.game-preview .btn {
+    margin-top: 10px;
+}
+
+.game-preview .bg-secondary {
+    background-color: #333333 !important;
+    border: 1px solid #FFD700;
+    color: #FFD700 !important;
+}
+
+.balance-info, .bet-info {
+    background-color: rgba(0, 0, 0, 0.5) !important;
+    border: 1px solid #FFD700;
+    color: #f0f0f0;
+}
+
+.current-bets-list .bet-item {
+    background-color: rgba(0, 0, 0, 0.5) !important;
+    border: 1px solid #FFD700;
+    color: #f0f0f0;
+}
+
+.modal-content {
+    background-color: #1a1a1a;
+    color: #f0f0f0;
+    border: 1px solid #FFD700;
+}
+
+.modal-header {
+    background-color: #333333;
+    border-bottom: 1px solid #FFD700;
+    color: #FFD700;
+}
+
+.modal-title {
+    color: #FFD700;
+}
+
+.btn-close {
+    filter: invert(1);
+}
+
+.result-win h2, .result-loss h2 {
+    color: #FFD700;
+}
+
+.result-win h4 {
+    color: #00AA00;
+}
+
+.result-loss h4 {
+    color: #CC0000;
+}
+
+/* Specific adjustments for slots */
+.slot-machine .card-header {
+    background-color: #333333 !important;
+    border-bottom: 1px solid #FFD700;
+    color: #FFD700 !important;
+}
+
+.slot-frame {
+    background: radial-gradient(circle, #2d5a3d 0%, #1a472a 100%);
+    border: 3px solid #FFD700;
+}
+
+.slot-symbol {
+    background: linear-gradient(to bottom, #333333 0%, #1a1a1a 100%);
+    color: #FFD700;
+    border: 1px solid #DAA520;
+}
+
+.paytable-item {
+    background: rgba(0, 0, 0, 0.5) !important;
+    color: #f0f0f0;
+    border: 1px solid #FFD700;
+}
+
+.paytable-item .badge {
+    background-color: #FFD700 !important;
+    color: #1a1a1a !important;
+}
+
+.bg-primary {
+    background-color: #333333 !important;
+}
+
+.bg-info {
+    background-color: #333333 !important;
+}
+
+.bg-secondary {
+    background-color: #333333 !important;
+}
+
+.text-primary {
+    color: #FFD700 !important;
+}
+
+.text-muted {
+    color: #aaaaaa !important;
+}
+
+/* Login/Register Page */
+.auth-card {
+    background-color: rgba(26, 26, 26, 0.9) !important;
+    border: 1px solid #FFD700;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    color: #f0f0f0;
+}
+
+.auth-card .card-header {
+    background-color: #333333 !important;
+    border-bottom: 1px solid #FFD700;
+    color: #FFD700 !important;
+}
+
+.auth-card .form-label {
+    color: #f0f0f0;
+}
+
+.auth-card .btn-primary {
+    background-color: #00AA00 !important;
+    border-color: #00AA00 !important;
+    color: #f0f0f0 !important;
+}
+
+.auth-card .btn-primary:hover {
+    background-color: #008800 !important;
+    border-color: #008800 !important;
+}
+
+.auth-card a {
+    color: #FFD700;
+}
+
+.auth-card a:hover {
+    color: #FFFFFF;
+}
+

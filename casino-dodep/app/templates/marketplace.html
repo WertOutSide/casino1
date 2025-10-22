@@ -1,0 +1,582 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-dark text-white">
+                <div class="card-body">
+                    <h1 class="card-title">Додеп маркет</h1>
+                    <p class="card-text">Покупай и продавай эксклюзивные предметы</p>
+                    <p class="card-test">Покупать лоты можно только после ставки стартовых 100$</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>Твой баланс: ${{ "%.2f"|format(user_balance) }}</strong>
+                        </div>
+                        <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#listItemModal">
+                            ➕ Выставить лот на продажу
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <ul class="nav nav-tabs mb-4 casino-tabs" id="marketplaceTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active casino-tab-link" id="browse-tab" data-bs-toggle="tab" data-bs-target="#browse" type="button" role="tab">
+                🛍️ Текущие лоты
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link casino-tab-link" id="inventory-tab" data-bs-toggle="tab" data-bs-target="#inventory" type="button" role="tab">
+                🎒 Купленные лоты
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link casino-tab-link" id="listings-tab" data-bs-toggle="tab" data-bs-target="#listings" type="button" role="tab">
+                📋 Мои лоты
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="marketplaceTabContent">
+        
+        <div class="tab-pane fade show active" id="browse" role="tabpanel">
+            <div class="row">
+                {% if items %}
+                    {% for item in items %}
+                        {% if item.is_sold == False %}
+                        <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+                            <div class="card h-100 item-card casino-card">
+                                <div class="card-header">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">by {{ item.seller.name }}</small>
+                                    </div>
+                                </div>
+                                <div class="card-body text-center">
+                                    <div class="item-image mb-3">
+                                        <img src="{{ item.image_url or '/static/images/default-item.png' }}" 
+                                            alt="{{ item.name }}" 
+                                            class="img-fluid rounded item-img"
+                                            onerror="this.src='/static/images/default-item.png'">
+                                    </div>
+                                    <h5 class="card-title">{{ item.name }}</h5>
+                                    <div class="price-tag">
+                                        <h4 class="text-success">${{ "%.2f"|format(item.price) }}</h4>
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    {% if item.seller_id != current_user.id %}
+                                    <button class="btn btn-success w-100 buy-btn" 
+                                            data-item-id="{{ item.id }}"
+                                            data-item-name="{{ item.name }}"
+                                            data-item-price="{{ item.price }}">
+                                        🛒 Покупай
+                                    </button>
+                                    {% else %}
+                                    <button class="btn btn-outline-secondary w-100" disabled>
+                                        Это твой лот
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                {% else %}
+                <div class="col-12">
+                    <div class="card text-center casino-card">
+                        <div class="card-body py-5">
+                            <h4>В маркете нет лотов</h4>
+                            <p class="text-muted">Будь первым, выстави лот на продажу!</p>
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#listItemModal">
+                                Выстави свой первый лот
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <nav aria-label="Item pagination">
+                <ul class="pagination">
+                    {% for page in items_pagination.iter_pages() %}
+                        {% if page %}
+                            {% if page != items_pagination.page %}
+                                <li class="page-item"><a class="page-link" href="{{ url_for('marketplace.marketplace', items_page=page) }}">{{page}}</a></li>
+                            {% else %}
+                                <li class="page-item active"><a class="page-link" href="#">{{page}}</a></li>
+                            {% endif %}
+                        {% else %}
+                            <span class=page-item-dots><strong>...</strong></span>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </nav>
+
+        </div>
+
+        <div class="tab-pane fade" id="inventory" role="tabpanel">
+            <div class="row" id="inventoryItems">
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="listings" role="tabpanel">
+            <div class="row" id="myListings">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="listItemModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Выставить новый лот на продажу</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="listItemForm" enctype="multipart/form-data">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="itemName" class="form-label">Имя *</label>
+                                <input type="text" class="form-control" id="itemName" required 
+                                       placeholder="например, Золотая Макака...">
+                            </div>
+                            <div class="mb-3">
+                                <label for="itemDescription" class="form-label">Описание</label>
+                                <textarea class="form-control" id="itemDescription" rows="3" 
+                                          placeholder="Опиши его..."></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="itemPrice" class="form-label">Цена ($) *</label>
+                                <input type="number" class="form-control" id="itemPrice" 
+                                       min="1" step="0.01" required placeholder="0.00">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="itemImage" class="form-label">Изображение лота</label>
+                                <div class="image-upload-container">
+                                    <div class="upload-area border rounded p-4 text-center" id="uploadArea">
+                                        <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                                        <p class="mb-2">Нажми или перенеси сюда для загрузки</p>
+                                        <p class="text-muted small">PNG, JPG, JPEG, GIF, WEBP</p>
+                                        <input type="file" class="d-none" id="itemImage" accept="image/*">
+                                    </div>
+                                    <div class="image-preview mt-3 text-center" id="imagePreview" style="display: none;">
+                                        <img id="previewImage" class="img-fluid rounded" style="max-height: 200px;">
+                                        <button type="button" class="btn btn-sm btn-outline-danger mt-2" onclick="removeImage()">
+                                            Удалить изображение
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отменить</button>
+                <button type="button" class="btn btn-primary" id="submitListItem" disabled>
+                    <span class="spinner-border spinner-border-sm d-none" id="submitSpinner"></span>
+                    Выставить на продажу
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="purchaseModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Подтвердить покупку</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Точно хочешь купить <strong id="purchaseItemName"></strong> за <strong id="purchaseItemPrice"></strong>?</p>
+                <p class="text-muted">Твой баланс после покупки: <strong id="balanceAfterPurchase"></strong></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отменить</button>
+                <button type="button" class="btn btn-success" id="confirmPurchase">Подтвердить покупку</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentPurchaseItemId = null;
+let selectedImageFile = null;
+
+document.getElementById('uploadArea').addEventListener('click', function() {
+    document.getElementById('itemImage').click();
+});
+
+document.getElementById('itemImage').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        if (file.size > 8 * 1024 * 1024) {
+            alert('File size too large. Maximum size is 8MB.');
+            return;
+        }
+        
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+        if (!validTypes.includes(file.type)) {
+            alert('Неправильный тип файла. Принимаем только (JPEG, PNG, GIF, WEBP).');
+            return;
+        }
+        
+        selectedImageFile = file;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('previewImage').src = e.target.result;
+            document.getElementById('imagePreview').style.display = 'block';
+            document.getElementById('uploadArea').style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+document.getElementById('uploadArea').addEventListener('dragover', function(e) {
+    e.preventDefault();
+    this.classList.add('bg-light');
+});
+
+document.getElementById('uploadArea').addEventListener('dragleave', function(e) {
+    e.preventDefault();
+    this.classList.remove('bg-light');
+});
+
+document.getElementById('uploadArea').addEventListener('drop', function(e) {
+    e.preventDefault();
+    this.classList.remove('bg-light');
+    
+    const file = e.dataTransfer.files[0];
+    if (file) {
+        document.getElementById('itemImage').files = e.dataTransfer.files;
+        const event = new Event('change');
+        document.getElementById('itemImage').dispatchEvent(event);
+    }
+});
+
+function removeImage() {
+    selectedImageFile = null;
+    document.getElementById('itemImage').value = '';
+    document.getElementById('imagePreview').style.display = 'none';
+    document.getElementById('uploadArea').style.display = 'block';
+}
+
+function validateForm() {
+    const name = document.getElementById('itemName').value;
+    const price = document.getElementById('itemPrice').value;
+    const submitBtn = document.getElementById('submitListItem');
+    
+    submitBtn.disabled = !(name && price);
+}
+
+document.getElementById('itemName').addEventListener('input', validateForm);
+document.getElementById('itemPrice').addEventListener('input', validateForm);
+
+document.getElementById('submitListItem').addEventListener('click', function() {
+    const formData = new FormData();
+    formData.append('name', document.getElementById('itemName').value);
+    formData.append('description', document.getElementById('itemDescription').value);
+    formData.append('price', document.getElementById('itemPrice').value);
+    
+    if (selectedImageFile) {
+        formData.append('image', selectedImageFile);
+    }
+
+    const submitBtn = document.getElementById('submitListItem');
+    const spinner = document.getElementById('submitSpinner');
+    submitBtn.disabled = true;
+    spinner.classList.remove('d-none');
+
+    fetch('/marketplace/list_item', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert('Error: ' + data.error);
+        } else {
+            alert('Item listed successfully!');
+            $('#listItemModal').modal('hide');
+            resetForm();
+            location.reload();
+        }
+    })
+    .catch(error => {
+        console.error('Ошибка:', error);
+        alert('Error listing item');
+    })
+    .finally(() => {
+        submitBtn.disabled = false;
+        spinner.classList.add('d-none');
+    });
+});
+
+function resetForm() {
+    document.getElementById('listItemForm').reset();
+    removeImage();
+    validateForm();
+}
+
+$('#listItemModal').on('hidden.bs.modal', function() {
+    resetForm();
+});
+
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('buy-btn')) {
+        const itemId = e.target.dataset.itemId;
+        const itemName = e.target.dataset.itemName;
+        const itemPrice = parseFloat(e.target.dataset.itemPrice);
+        const userBalance = {{ user_balance }};
+        
+        if (userBalance < itemPrice) {
+            alert('Недостаточно средств!');
+            return;
+        }
+        
+        currentPurchaseItemId = itemId;
+        document.getElementById('purchaseItemName').textContent = itemName;
+        document.getElementById('purchaseItemPrice').textContent = '$' + itemPrice.toFixed(2);
+        document.getElementById('balanceAfterPurchase').textContent = '$' + (userBalance - itemPrice).toFixed(2);
+        
+        $('#purchaseModal').modal('show');
+    }
+});
+
+document.getElementById('confirmPurchase').addEventListener('click', function() {
+    if (!currentPurchaseItemId) return;
+    
+    fetch(`/marketplace/buy_item/${currentPurchaseItemId}`, {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert('Error: ' + data.error);
+        } else {
+            alert(`Успешно купил ${data.item_name}!`);
+            $('#purchaseModal').modal('hide');
+            location.reload();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error purchasing item');
+    });
+});
+
+function loadInventory() {
+    fetch('/marketplace/inventory')
+    .then(response => response.json())
+    .then(items => {
+        const container = document.getElementById('inventoryItems');
+        
+        if (items.length === 0) {
+            container.innerHTML = `
+                <div class="col-12">
+                    <div class="card text-center casino-card">
+                        <div class="card-body py-5">
+                            <h4>Твой инвентарь пуст</h4>
+                            <p class="text-muted">Купи пару лотов в маркете!</p>
+                            <button class="btn btn-primary" onclick="switchToBrowseTab()">
+                                Посмотреть лоты
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = items.map(item => `
+            <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+                <div class="card h-100 inventory-item">
+                    <div class="card-body text-center">
+                        <div class="item-image mb-3">
+                            <img src="${item.image_url || '/static/images/default-item.png'}" 
+                                 alt="${item.item_name}" 
+                                 class="img-fluid rounded item-img"
+                                 onerror="this.src='/static/images/default-item.png'">
+                        </div>
+                        <h5 class="card-title">${item.item_name}</h5>
+                        <p class="card-text text-muted">${item.item_description}</p>
+                        <div class="acquired-info">
+                            <small class="text-muted">Куплено: ${new Date(item.acquired_at).toLocaleDateString()}</small><br>
+                            <small class="text-muted">Цена: $${item.original_price.toFixed(2)}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    });
+}
+
+function loadMyListings() {
+    fetch('/marketplace/my_listings')
+    .then(response => response.json())
+    .then(items => {
+        const container = document.getElementById('myListings');
+        
+        if (items.length === 0) {
+            container.innerHTML = `
+                <div class="col-12">
+                    <div class="card text-center casino-card">
+                        <div class="card-body py-5">
+                            <h4>Еще нет лотов на продажу</h4>
+                            <p class="text-muted">Выстави первый лот на продажу и зарабатывай!</p>
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#listItemModal">
+                                Выстави свой первый лот
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = items.map(item => `
+            <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+                <div class="card h-100 listing-item">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <button class="btn btn-sm btn-outline-danger remove-listing" 
+                                    data-item-id="${item.id}"
+                                    data-item-name="${item.name}">
+                                ❌
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="item-image mb-3">
+                            <img src="${item.image_url || '/static/images/default-item.png'}" 
+                                 alt="${item.name}" 
+                                 class="img-fluid rounded item-img"
+                                 onerror="this.src='/static/images/default-item.png'">
+                        </div>
+                        <h5 class="card-title">${item.name}</h5>
+                        <div class="price-tag">
+                            <h4 class="text-success">$${item.price.toFixed(2)}</h4>
+                        </div>
+                        <div class="listed-info">
+                            <small class="text-muted">Listed: ${new Date(item.created_at).toLocaleDateString()}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+        
+        document.querySelectorAll('.remove-listing').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const itemId = this.dataset.itemId;
+                const itemName = this.dataset.itemName;
+                
+                if (confirm(`Точно хочешь удалить "${itemName}" из маркета?`)) {
+                    fetch(`/marketplace/remove_listing/${itemId}`, {
+                        method: 'DELETE'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            alert('Error: ' + data.error);
+                        } else {
+                            alert('Listing removed successfully');
+                            loadMyListings();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error removing listing');
+                    });
+                }
+            });
+        });
+    });
+}
+
+function switchToBrowseTab() {
+    const browseTab = new bootstrap.Tab(document.getElementById('browse-tab'));
+    browseTab.show();
+}
+
+document.getElementById('inventory-tab').addEventListener('shown.bs.tab', loadInventory);
+document.getElementById('listings-tab').addEventListener('shown.bs.tab', loadMyListings);
+</script>
+
+<style>
+.upload-area {
+    cursor: pointer;
+    transition: background-color 0.3s;
+    border: 2px dashed #dee2e6 !important;
+}
+
+.upload-area:hover {
+    background-color: #f8f9fa;
+    border-color: #007bff !important;
+}
+
+.image-preview img {
+    max-width: 100%;
+    border-radius: 10px;
+}
+
+.item-img {
+    max-height: 200px;
+    width: auto;
+    object-fit: contain;
+}
+
+.bg-common { background-color: #6c757d !important; }
+.bg-rare { background-color: #007bff !important; }
+.bg-epic { background-color: #6f42c1 !important; }
+.bg-legendary { background-color: #fd7e14 !important; }
+
+.item-card, .inventory-item, .listing-item {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.item-card:hover, .inventory-item:hover, .listing-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.price-tag {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    padding: 10px;
+    border-radius: 10px;
+    margin: 10px 0;
+}
+
+.pagination {
+    justify-content: center;
+}
+
+.pagination .page-item .page-link {
+    background-color: #1a1a1a;
+    color: #FFD700;
+}
+
+.pagination .page-item.active .page-link{
+    background-color: #555555;
+    color: #FFD700;
+    border-color: #dee2e6;
+}
+
+.page-item-dots {
+    margin-left: 1%;
+    margin-right: 1%;
+}
+</style>
+{% endblock %}

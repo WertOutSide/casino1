@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0 text-center">Добро пожаловать в ДОДЕП РОЯЛЬ</h4>
+            </div>
+            <div class="card-body p-4">
+                <div id="loginForm">
+                    <form method="POST" action="{{ url_for('auth.login') }}">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Имя игрока</label>
+                            <input type="text" class="form-control" id="username" name="username" required 
+                                   placeholder="winner">
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Пароль</label>
+                            <input type="password" class="form-control" id="password" name="password" required 
+                                   placeholder="********">
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">Войти</button>
+                        </div>
+                    </form>
+                    
+                    <div class="text-center mt-3">
+                        <p class="mb-0">Еще нет аккаунта?
+                            <a href="{{ url_for('auth.register') }}" class="text-decoration-none">Регистрируйся!</a>
+                        </p>
+                    </div>
+                </div>
+
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title text-center mb-3">Залетай к нам, у нас</h6>
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <div class="text-primary mb-2">💎</div>
+                                <small>Легкий вывод средств</small>
+                            </div>
+                            <div class="col-4">
+                                <div class="text-primary mb-2">🃏</div>
+                                <small>Честные игры</small>
+                            </div>
+                            <div class="col-4">
+                                <div class="text-primary mb-2">🏆</div>
+                                <small>Большие выигрышы</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border: none;
+    border-radius: 15px;
+}
+.card-header {
+    border-radius: 15px 15px 0 0 !important;
+    padding: 2rem 1rem;
+}
+.form-control {
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+}
+.btn {
+    border-radius: 10px;
+    padding: 0.75rem 1.5rem;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,692 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-dark text-white">
+                <div class="card-body text-center">
+                    <h1 class="display-4 mb-3">🎰 ДОДЕП СЛОТЫ 🎰</h1>
+                    <p class="lead mb-0">Крути, чтобы выиграть! Собери три в ряд!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="card casino-card">
+                <div class="card-header bg-dark text-white">
+                    <h4 class="mb-0">🎰 Депнул для победы</h4>
+                </div>
+                <div class="card-body">
+                    <div class="slot-machine">
+                        <div class="slot-frame">
+                            <div class="payline-indicators">
+                                <div class="payline-label left">
+                                    <div class="line-marker line-1">1</div>
+                                    <div class="line-marker line-2">2</div>
+                                    <div class="line-marker line-3">3</div>
+                                    <div class="line-marker line-4">4</div>
+                                    <div class="line-marker line-5">5</div>
+                                </div>
+                            </div>
+                            
+                            <div class="slot-window">
+                                <div class="slot-reels-container" id="slotReels">
+                                    <div class="reel" id="reel-0">
+                                        <div class="reel-strip">
+                                            <div class="slot-symbol">🍒</div>
+                                            <div class="slot-symbol">🍋</div>
+                                            <div class="slot-symbol">🍊</div>
+                                        </div>
+                                    </div>
+                                    <div class="reel" id="reel-1">
+                                        <div class="reel-strip">
+                                            <div class="slot-symbol">🍒</div>
+                                            <div class="slot-symbol">🍋</div>
+                                            <div class="slot-symbol">🍊</div>
+                                        </div>
+                                    </div>
+                                    <div class="reel" id="reel-2">
+                                        <div class="reel-strip">
+                                            <div class="slot-symbol">🍒</div>
+                                            <div class="slot-symbol">🍋</div>
+                                            <div class="slot-symbol">🍊</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="paylines-overlay">
+                                    <svg class="payline-svg" id="paylineSvg" viewBox="0 0 100 100" preserveAspectRatio="none">
+                                    </svg>
+                                </div>
+                            </div>
+                            
+                            <div class="payline-indicators">
+                                <div class="payline-label right">
+                                    <div class="line-marker line-1">1</div>
+                                    <div class="line-marker line-2">2</div>
+                                    <div class="line-marker line-3">3</div>
+                                    <div class="line-marker line-4">4</div>
+                                    <div class="line-marker line-5">5</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="spin-results mt-3" id="spinResults" style="display: none;">
+                            <div class="alert alert-success" id="winMessage" style="display: none;">
+                                <h4>🎉 Это победа! 🎉</h4>
+                                <p id="winAmount" class="mb-0"></p>
+                                <div id="winningLinesInfo" class="mt-2"></div>
+                            </div>
+                            <div class="alert alert-info" id="lossMessage" style="display: none;">
+                                <h4>😢 В следующий раз точно повезет!</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card mb-4 casino-card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">Ставки</h5>
+                </div>
+                <div class="card-body">
+                    <div class="balance-info mb-3 p-3 bg-light rounded">
+                        <h6>Твой баланс</h6>
+                        <h3 class="text-success" id="currentBalance">${{ "%.2f"|format(current_user.balance) }}</h3>
+                    </div>
+                    
+                    <div class="bet-controls mb-4">
+                        <label for="betAmount" class="form-label">Размер ставки</label>
+                        <div class="input-group mb-2">
+                            <span class="input-group-text">$</span>
+                            <input type="number" class="form-control" id="betAmount" 
+                                   min="1" max="100" step="1" value="10">
+                        </div>
+                        <div class="quick-bets btn-group w-100">
+                            <button type="button" class="btn btn-outline-primary quick-bet" data-bet="1">$1</button>
+                            <button type="button" class="btn btn-outline-primary quick-bet" data-bet="5">$5</button>
+                            <button type="button" class="btn btn-outline-primary quick-bet" data-bet="10">$10</button>
+                            <button type="button" class="btn btn-outline-primary quick-bet" data-bet="25">$25</button>
+                            <button type="button" class="btn btn-outline-primary quick-bet" data-bet="50">$50</button>
+                        </div>
+                    </div>
+                    
+                    <div class="spin-controls">
+                        <button class="btn btn-success btn-lg w-100 mb-2 spin-button" id="spinButton">
+                            <span class="spin-text">🎰 Крутить 🎰</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4 casino-card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">💰 Призы</h5>
+                </div>
+                <div class="card-body">
+                    <div class="paytable">
+                        <div class="paytable-item d-flex justify-content-between align-items-center mb-2">
+                            <span>🍒 Вишенка</span>
+                            <span class="badge bg-success">2x</span>
+                        </div>
+                        <div class="paytable-item d-flex justify-content-between align-items-center mb-2">
+                            <span>🍋 Лимон</span>
+                            <span class="badge bg-success">3x</span>
+                        </div>
+                        <div class="paytable-item d-flex justify-content-between align-items-center mb-2">
+                            <span>🍊 Апельсин</span>
+                            <span class="badge bg-success">4x</span>
+                        </div>
+                        <div class="paytable-item d-flex justify-content-between align-items-center mb-2">
+                            <span>🍑 Слива</span>
+                            <span class="badge bg-success">5x</span>
+                        </div>
+                        <div class="paytable-item d-flex justify-content-between align-items-center mb-2">
+                            <span>🍇 Виноград</span>
+                            <span class="badge bg-success">7x</span>
+                        </div>
+                        <div class="paytable-item d-flex justify-content-between align-items-center mb-2">
+                            <span>🍉 Арбуз</span>
+                            <span class="badge bg-success">10x</span>
+                        </div>
+                        <div class="paytable-item d-flex justify-content-between align-items-center mb-2">
+                            <span>7️⃣ Блатная Семерка</span>
+                            <span class="badge bg-warning">20x</span>
+                        </div>
+                        <div class="paytable-item d-flex justify-content-between align-items-center mb-2">
+                            <span>🐕 Золотой Пес</span>
+                            <span class="badge bg-danger">50x</span>
+                        </div>
+                        <div class="paytable-item d-flex justify-content-between align-items-center mb-2">
+                            <span>🐵 Золотая Макака</span>
+                            <span class="badge bg-gold">100x</span>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="text-center">
+                        <small class="text-muted">5 Paylines Active</small>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<canvas id="confetti-canvas"></canvas>
+{% endblock %}
+
+{% block scripts %}
+<script>
+class SlotGame {
+    constructor() {
+        this.isSpinning = false;
+        this.currentBet = 10;
+        this.balance = {{ current_user.balance }};
+        this.reelSymbols = ['🍒', '🍋', '🍊', '🍑', '🍇', '🍉', '7️⃣', '🐕', '🐵'];
+        this.initializeEventListeners();
+        this.updateDisplay();
+    }
+
+    initializeEventListeners() {
+        document.getElementById('spinButton').addEventListener('click', () => this.spin());
+        
+        document.getElementById('betAmount').addEventListener('input', (e) => {
+            this.currentBet = parseInt(e.target.value) || 10;
+        });
+        
+        document.querySelectorAll('.quick-bet').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                this.currentBet = parseInt(e.target.dataset.bet);
+                document.getElementById('betAmount').value = this.currentBet;
+            });
+        });
+    }
+
+    updateDisplay() {
+        document.getElementById('currentBalance').textContent = '$' + this.balance.toFixed(2);
+    }
+
+    async spin() {
+        if (this.isSpinning) return;
+        
+        const betAmount = this.currentBet;
+        if (this.balance < betAmount) {
+            alert('Insufficient balance!');
+            return;
+        }
+
+        this.isSpinning = true;
+        this.disableControls();
+        this.clearPaylines();
+        
+        document.getElementById('spinResults').style.display = 'none';
+
+        try {
+            await this.animateReels();
+            
+            const response = await fetch('/slots/spin', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ bet: betAmount })
+            });
+
+            const result = await response.json();
+
+            if (result.error) {
+                alert('Error: ' + result.error);
+                this.isSpinning = false;
+                this.enableControls();
+                return;
+            }
+
+            await this.stopReels(result.grid);
+            
+            setTimeout(() => {
+                this.showResult(result);
+            }, 500);
+
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error spinning slots');
+            this.isSpinning = false;
+            this.enableControls();
+        }
+    }
+
+    async animateReels() {
+        const reels = document.querySelectorAll('.reel');
+        
+        reels.forEach((reel, index) => {
+            const reelStrip = reel.querySelector('.reel-strip');
+            reelStrip.classList.add('spinning');
+            
+            const symbols = [];
+            for (let i = 0; i < 20; i++) {
+                const randomSymbol = this.reelSymbols[Math.floor(Math.random() * this.reelSymbols.length)];
+                symbols.push(`<div class="slot-symbol">${randomSymbol}</div>`);
+            }
+            reelStrip.innerHTML = symbols.join('');
+        });
+        
+        await this.sleep(1000);
+    }
+
+    async stopReels(grid) {
+        const reels = document.querySelectorAll('.reel');
+        
+        for (let reelIndex = 0; reelIndex < 3; reelIndex++) {
+            await this.sleep(300);
+            
+            const reel = reels[reelIndex];
+            const reelStrip = reel.querySelector('.reel-strip');
+            
+            reelStrip.classList.remove('spinning');
+            
+            const column = [grid[0][reelIndex], grid[1][reelIndex], grid[2][reelIndex]];
+            reelStrip.innerHTML = column.map(symbol => 
+                `<div class="slot-symbol">${symbol}</div>`
+            ).join('');
+        }
+    }
+
+    clearPaylines() {
+        const svg = document.getElementById('paylineSvg');
+        svg.innerHTML = '';
+    }
+
+    drawPaylines(winningLines) {
+        if (!winningLines || winningLines.length === 0) return;
+        
+        const svg = document.getElementById('paylineSvg');
+        const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff'];
+        
+        winningLines.forEach((line, index) => {
+            const positions = line.positions;
+            const color = colors[index % colors.length];
+            
+            let pathData = '';
+            positions.forEach((pos, i) => {
+                const [row, col] = pos;
+                const x = (col * 33.33) + 16.67;
+                const y = (row * 33.33) + 16.67;
+                
+                if (i === 0) {
+                    pathData += `M ${x} ${y}`;
+                } else {
+                    pathData += ` L ${x} ${y}`;
+                }
+            });
+            
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('d', pathData);
+            path.setAttribute('stroke', color);
+            path.setAttribute('stroke-width', '3');
+            path.setAttribute('fill', 'none');
+            path.setAttribute('stroke-linecap', 'round');
+            path.classList.add('payline-path');
+            
+            svg.appendChild(path);
+        });
+    }
+
+    showResult(result) {
+        this.balance = result.new_balance;
+        this.updateDisplay();
+
+        document.getElementById('winMessage').style.display = 'none';
+        document.getElementById('lossMessage').style.display = 'none';
+        document.getElementById('spinResults').style.display = 'block';
+
+        if (result.is_win) {
+            const winMessage = document.getElementById('winMessage');
+            const winAmount = document.getElementById('winAmount');
+            const winningLinesInfo = document.getElementById('winningLinesInfo');
+            
+            winAmount.textContent = `Ты выиграл $${result.win_amount.toFixed(2)}!`;
+            
+            if (result.winning_lines && result.winning_lines.length > 0) {
+                const linesHtml = result.winning_lines.map(line => 
+                    `<div class="winning-line-badge">
+                        <strong>${line.line_name}:</strong> ${line.symbol} × ${line.multiplier} = $${line.win_amount.toFixed(2)}
+                    </div>`
+                ).join('');
+                winningLinesInfo.innerHTML = linesHtml;
+                
+                this.drawPaylines(result.winning_lines);
+            }
+            
+            if (result.is_jackpot) {
+                winMessage.innerHTML = `
+                    <h4>🎊 ДЖЭКПОТ! 🎊</h4>
+                    <p class="mb-0">И ЭТОО ЗОЛОТАЯ МАКАКА! Ты выиграл $${result.win_amount.toFixed(2)}!</p>
+                    ${winningLinesInfo.innerHTML}
+                `;
+                winMessage.className = 'alert alert-warning';
+                this.celebrate();
+            } else {
+                winMessage.className = 'alert alert-success';
+            }
+            
+            winMessage.style.display = 'block';
+            
+            if (result.win_amount > this.currentBet * 10) {
+                this.celebrate();
+            }
+        } else {
+            document.getElementById('lossMessage').style.display = 'block';
+        }
+
+        this.isSpinning = false;
+        this.enableControls();
+    }
+
+    celebrate() {
+        const canvas = document.getElementById('confetti-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        const confettiPieces = [];
+        const confettiCount = 150;
+        const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
+        
+        for (let i = 0; i < confettiCount; i++) {
+            confettiPieces.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height - canvas.height,
+                r: Math.random() * 6 + 4,
+                d: Math.random() * confettiCount,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                tilt: Math.random() * 10 - 10,
+                tiltAngleIncremental: Math.random() * 0.07 + 0.05,
+                tiltAngle: 0
+            });
+        }
+        
+        let animationFrame;
+        const animate = () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            confettiPieces.forEach((p, index) => {
+                p.tiltAngle += p.tiltAngleIncremental;
+                p.y += (Math.cos(p.d) + 3 + p.r / 2) / 2;
+                p.x += Math.sin(p.d);
+                p.tilt = Math.sin(p.tiltAngle - index / 3) * 15;
+                
+                ctx.beginPath();
+                ctx.lineWidth = p.r / 2;
+                ctx.strokeStyle = p.color;
+                ctx.moveTo(p.x + p.tilt + p.r / 4, p.y);
+                ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 4);
+                ctx.stroke();
+                
+                if (p.y > canvas.height) {
+                    confettiPieces.splice(index, 1);
+                }
+            });
+            
+            if (confettiPieces.length > 0) {
+                animationFrame = requestAnimationFrame(animate);
+            } else {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        };
+        
+        animate();
+        
+        setTimeout(() => {
+            if (animationFrame) {
+                cancelAnimationFrame(animationFrame);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        }, 5000);
+    }
+
+    sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    disableControls() {
+        document.getElementById('spinButton').disabled = true;
+        document.getElementById('betAmount').disabled = true;
+        document.querySelectorAll('.quick-bet').forEach(btn => {
+            btn.disabled = true;
+        });
+    }
+
+    enableControls() {
+        document.getElementById('spinButton').disabled = false;
+        document.getElementById('betAmount').disabled = false;
+        document.querySelectorAll('.quick-bet').forEach(btn => {
+            btn.disabled = false;
+        });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    window.slotGame = new SlotGame();
+});
+</script>
+
+<style>
+.slot-machine {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.slot-frame {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border: 15px solid #8B4513;
+    border-radius: 25px;
+    padding: 30px 20px;
+    box-shadow: 
+        0 20px 60px rgba(0,0,0,0.6),
+        inset 0 0 30px rgba(255,215,0,0.1);
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.payline-indicators {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    height: 100%;
+}
+
+.payline-label {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.line-marker {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.8rem;
+    color: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+.line-marker.line-1 { background: linear-gradient(135deg, #ff0000, #cc0000); }
+.line-marker.line-2 { background: linear-gradient(135deg, #00ff00, #00cc00); }
+.line-marker.line-3 { background: linear-gradient(135deg, #0000ff, #0000cc); }
+.line-marker.line-4 { background: linear-gradient(135deg, #ffff00, #cccc00); }
+.line-marker.line-5 { background: linear-gradient(135deg, #ff00ff, #cc00cc); }
+
+.slot-window {
+    flex: 1;
+    background: linear-gradient(180deg, #000000 0%, #1a1a1a 100%);
+    border: 8px solid #FFD700;
+    border-radius: 15px;
+    padding: 15px;
+    box-shadow: 
+        inset 0 0 30px rgba(0,0,0,0.8),
+        0 0 20px rgba(255,215,0,0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.slot-reels-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    position: relative;
+    z-index: 1;
+}
+
+.reel {
+    background: rgba(255,255,255,0.05);
+    border-radius: 10px;
+    overflow: hidden;
+    height: 270px;
+    position: relative;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+}
+
+.reel-strip {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    transition: transform 0.1s linear;
+}
+
+.reel-strip.spinning {
+    animation: spin-reel 0.1s linear infinite;
+}
+
+.slot-symbol {
+    background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
+    border: 3px solid #333;
+    border-radius: 8px;
+    height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3.5rem;
+    box-shadow: 
+        0 4px 8px rgba(0,0,0,0.3),
+        inset 0 0 10px rgba(255,255,255,0.3);
+    flex-shrink: 0;
+}
+
+.paylines-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.payline-svg {
+    width: 100%;
+    height: 100%;
+}
+
+.payline-path {
+    animation: pulse-line 1s ease-in-out infinite;
+}
+
+.spin-button {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border: none;
+    font-size: 1.3rem;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    box-shadow: 0 5px 15px rgba(40,167,69,0.4);
+    transition: all 0.3s ease;
+}
+
+.spin-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(40,167,69,0.6);
+}
+
+.spin-button:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.spin-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.bg-gold {
+    background-color: #ffd700 !important;
+    color: #000 !important;
+}
+
+.winning-line-badge {
+    background: rgba(255,255,255,0.2);
+    padding: 5px 10px;
+    border-radius: 5px;
+    margin: 5px 0;
+    font-size: 0.9rem;
+}
+
+#confetti-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+}
+
+@keyframes spin-reel {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-90px); }
+}
+
+@keyframes pulse-line {
+    0%, 100% { opacity: 1; stroke-width: 3; }
+    50% { opacity: 0.6; stroke-width: 5; }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .slot-frame {
+        padding: 20px 10px;
+        gap: 10px;
+    }
+    
+    .slot-symbol {
+        font-size: 2.5rem;
+        height: 70px;
+    }
+    
+    .reel {
+        height: 210px;
+    }
+    
+    .line-marker {
+        width: 25px;
+        height: 25px;
+        font-size: 0.7rem;
+    }
+    
+    .quick-bets .btn {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.4rem;
+    }
+}
+</style>
+{% endblock %}
+

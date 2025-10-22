@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-dark text-white">
+                <div class="card-body text-center">
+                    <h1 class="display-4 mb-3">🎡 ДОДЕП РУЛЕТКА 🎡</h1>
+                    <p class="lead mb-0">Делай ставку и крути колесо!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="card casino-card">
+                <div class="card-header bg-dark text-white">
+                    <h4 class="mb-0">Рулетка</h4>
+                </div>
+                <div class="card-body p-4" style="background: linear-gradient(135deg, #1a472a 0%, #2d5a3d 100%);">
+                    <div class="roulette-wheel-container mb-4">
+                        <div class="wheel-outer">
+                            <div class="wheel-inner" id="rouletteWheel">
+                                <canvas id="wheelCanvas" width="400" height="400"></canvas>
+                                <div class="wheel-ball" id="wheelBall"></div>
+                                <div class="wheel-center">
+                                    <div class="wheel-center-inner"></div>
+                                </div>
+                            </div>
+                            <div class="wheel-pointer"></div>
+                        </div>
+                        <div class="winning-number-display" id="winningNumberDisplay">
+                            <div class="winning-number" id="winningNumber">-</div>
+                        </div>
+                    </div>
+
+                    <div class="last-results mb-4">
+                        <h6 class="text-white mb-2">Прошлые результаты:</h6>
+                        <div class="results-track" id="lastResults">
+                            <span class="text-white-50">Вы еще не крутили</span>
+                        </div>
+                    </div>
+
+                    <div class="betting-table">
+                        <div class="betting-grid">
+                            <div class="bet-cell zero-cell" data-bet-type="straight" data-bet-value="0">
+                                <span>0</span>
+                            </div>
+                            
+                            <div class="numbers-grid">
+                                {% for row in range(3) %}
+                                <div class="number-row">
+                                    {% for col in range(12) %}
+                                    {% set num = (col * 3) + (3 - row) %}
+                                    {% if num in [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36] %}
+                                        {% set color = 'red' %}
+                                    {% else %}
+                                        {% set color = 'black' %}
+                                    {% endif %}
+                                    <div class="bet-cell number-cell {{ color }}" 
+                                         data-bet-type="straight" 
+                                         data-bet-value="{{ num }}">
+                                        <span>{{ num }}</span>
+                                        <div class="chip-container"></div>
+                                    </div>
+                                    {% endfor %}
+                                    <div class="bet-cell column-cell" 
+                                         data-bet-type="column" 
+                                         data-bet-value="{{ 3 - row }}">
+                                        <span>2:1</span>
+                                        <div class="chip-container"></div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                                
+                                <div class="dozen-row">
+                                    <div class="bet-cell dozen-cell" data-bet-type="dozen" data-bet-value="1">
+                                        <span>1st 12</span>
+                                        <div class="chip-container"></div>
+                                    </div>
+                                    <div class="bet-cell dozen-cell" data-bet-type="dozen" data-bet-value="2">
+                                        <span>2nd 12</span>
+                                        <div class="chip-container"></div>
+                                    </div>
+                                    <div class="bet-cell dozen-cell" data-bet-type="dozen" data-bet-value="3">
+                                        <span>3rd 12</span>
+                                        <div class="chip-container"></div>
+                                    </div>
+                                    <div class="bet-cell empty-cell"></div>
+                                </div>
+                                
+                                <div class="outside-row">
+                                    <div class="bet-cell outside-cell" data-bet-type="low_high" data-bet-value="low">
+                                        <span>1-18</span>
+                                        <div class="chip-container"></div>
+                                    </div>
+                                    <div class="bet-cell outside-cell" data-bet-type="even_odd" data-bet-value="even">
+                                        <span>EVEN</span>
+                                        <div class="chip-container"></div>
+                                    </div>
+                                    <div class="bet-cell outside-cell color-bet-red" data-bet-type="color" data-bet-value="red">
+                                        <span>♦</span>
+                                        <div class="chip-container"></div>
+                                    </div>
+                                    <div class="bet-cell outside-cell color-bet-black" data-bet-type="color" data-bet-value="black">
+                                        <span>♠</span>
+                                        <div class="chip-container"></div>
+                                    </div>
+                                    <div class="bet-cell outside-cell" data-bet-type="even_odd" data-bet-value="odd">
+                                        <span>ODD</span>
+                                        <div class="chip-container"></div>
+                                    </div>
+                                    <div class="bet-cell outside-cell" data-bet-type="low_high" data-bet-value="high">
+                                        <span>19-36</span>
+                                        <div class="chip-container"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card mb-4 casino-card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">Ставки</h5>
+                </div>
+                <div class="card-body">
+                    <div class="balance-info mb-3 p-3 bg-light rounded">
+                        <h6>Твой баланс</h6>
+                        <h3 class="text-success" id="currentBalance">${{ "%.2f"|format(current_user.balance) }}</h3>
+                    </div>
+                    
+                    <div class="bet-info mb-3 p-3 bg-light rounded">
+                        <h6>Общая ставка</h6>
+                        <h4 class="text-primary" id="totalBet">$0.00</h4>
+                    </div>
+                    
+                    <div class="chip-selection mb-4">
+                        <label class="form-label">Выбери фишку</label>
+                        <div class="chip-buttons">
+                            <button class="chip-btn chip-1" data-value="1">$1</button>
+                            <button class="chip-btn chip-5" data-value="5">$5</button>
+                            <button class="chip-btn chip-10 active" data-value="10">$10</button>
+                            <button class="chip-btn chip-25" data-value="25">$25</button>
+                            <button class="chip-btn chip-50" data-value="50">$50</button>
+                            <button class="chip-btn chip-100" data-value="100">$100</button>
+                        </div>
+                    </div>
+                    
+                    <div class="game-controls">
+                        <button class="btn btn-success btn-lg w-100 mb-2" id="spinButton">
+                            🎡 КРУТИТЬ КОЛЕСО 🎡
+                        </button>
+                        <button class="btn btn-warning w-100 mb-2" id="clearBetsButton">
+                            Очистить ставку
+                        </button>
+                        <button class="btn btn-secondary w-100" id="undoButton">
+                            Отменить последнюю ставку
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4 casino-card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">Текущая ставка</h5>
+                </div>
+                <div class="card-body">
+                    <div id="currentBets" class="current-bets-list">
+                        <p class="text-muted text-center">Ставок еще нет</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="resultModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Результат</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center" id="resultModalBody">
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/roulette.js') }}"></script>
+{% endblock %}
+
